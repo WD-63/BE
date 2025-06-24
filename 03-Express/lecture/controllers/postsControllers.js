@@ -1,18 +1,17 @@
-const posts = [
-	{
-		id: 1,
-		title: 'First Post',
-		content: 'This is the content of the first post.',
-	},
-	{
-		id: 2,
-		title: 'Second Post',
-		content: 'This is the content of the second post.',
-	},
-];
+import { client } from '../DB/DBconnection.js';
 
-export const getAllPosts = (req, res) => {
-	res.json(posts);
+export const getAllPosts = async (req, res) => {
+	try {
+		const results = await client.query('SELECT * FROM posts');
+		const posts = results.rows;
+		if (posts.length === 0) {
+			return res.status(404).json({ message: 'No posts found' });
+		}
+		return res.status(200).json(posts);
+	} catch (error) {
+		console.error('Error fetching posts:', error);
+		return res.status(500).json({ message: 'Internal server error' });
+	}
 };
 
 export const getPostById = (req, res) => {
@@ -24,18 +23,23 @@ export const getPostById = (req, res) => {
 	res.json(post);
 };
 
-export const createPost = (req, res) => {
-	const { title, content } = req.body;
-	if (!title || !content) {
-		return res.status(400).json({ message: 'Title and content are required' });
+export const createPost = async (req, res) => {
+	try {
+		const { title, author, content } = req.body;
+		if (!title || !author || !content) {
+			return res
+				.status(400)
+				.json({ message: 'Title, author and content are required' });
+		}
+		const results = await client.query(
+			'INSERT INTO posts (title, author, content) VALUES ($1, $2, $3) RETURNING *',
+			[title, author, content]
+		);
+		return res.status(201).json(results.rows[0]);
+	} catch (error) {
+		console.error('Error creating post:', error);
+		return res.status(500).json({ message: 'Internal server error' });
 	}
-	const newPost = {
-		id: posts.length + 1,
-		title,
-		content,
-	};
-	posts.push(newPost);
-	res.status(201).json(newPost);
 };
 
 export const updatePost = (req, res) => {
