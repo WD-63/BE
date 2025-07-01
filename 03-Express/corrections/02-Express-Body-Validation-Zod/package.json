@@ -1,0 +1,23 @@
+{
+  "name": "express-body-validation",
+  "version": "1.0.0",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "node --env-file=.env --watch index.js",
+    "start": "node index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "express": "^5.1.0",
+    "pg": "^8.16.0",
+    "sequelize": "^6.37.7",
+    "zod": "^3.25.28"
+  },
+  "devDependencies": {
+    "dotenv": "^16.5.0"
+  }
+}
