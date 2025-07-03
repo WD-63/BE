@@ -1,5 +1,11 @@
 import { Schema, model } from "mongoose";
 
+const locationSchema = new Schema({
+  country: String,
+  city: String,
+  zipCode: String,
+});
+
 const userSchema = new Schema(
   {
     firstName: {
@@ -14,6 +20,14 @@ const userSchema = new Schema(
       type: String,
       required: [true, "Email is required!"],
       unique: [true, "Email must be unique"],
+    },
+    location: {
+      type: locationSchema,
+      default: {
+        country: "",
+        city: "",
+        zipCode: "",
+      },
     },
   },
   { timestamps: true }
