@@ -1,12 +1,12 @@
-import Post from "../models/postModel.js";
 import { isValidObjectId } from "mongoose";
+import Post from "../models/postModel.js";
 
 export const getAllPosts = async (req, res) => {
   const posts = await Post.find().populate("user", "firstName lastName");
   if (!posts) {
     throw new Error("No Posts found", { cause: 404 });
   }
-  return res.json(posts);
+  return res.status(200).json(posts);
 };
 
 export const getPostById = async (req, res) => {
@@ -18,13 +18,13 @@ export const getPostById = async (req, res) => {
   if (!post) {
     throw new Error("Post not found", { cause: 404 });
   }
-  return res.json(post);
+  return res.status(200).json(post);
 };
 
 export const createPost = async (req, res) => {
   const { title, content, user } = req.sanitizedBody;
   const newPost = await Post.create({ title, content, user });
-  return res.json(newPost);
+  return res.status(201).json(newPost);
 };
 
 export const updatePost = async (req, res) => {
@@ -39,7 +39,7 @@ export const updatePost = async (req, res) => {
   if (!post) {
     throw new Error("Post not found", { cause: 404 });
   }
-  return res.json(post);
+  return res.status(200).json(post);
 };
 
 export const deletePost = async (req, res) => {
@@ -51,5 +51,5 @@ export const deletePost = async (req, res) => {
   if (!post) {
     throw new Error("Post not found", { cause: 404 });
   }
-  return res.json({ message: "Post deleted" });
+  return res.status(200).json({ message: "Post deleted" });
 };
