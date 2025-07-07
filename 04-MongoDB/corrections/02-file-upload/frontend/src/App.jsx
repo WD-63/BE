@@ -10,6 +10,7 @@ function App() {
 	const [uploadedImage, setUploadedImage] = useState(null);
 
 	const handleChange = (e) => {
+		console.log(e.target.files);
 		const fileToUpload = e.target.files[0];
 		setFile(fileToUpload);
 		setPreview(URL.createObjectURL(fileToUpload));
@@ -17,7 +18,25 @@ function App() {
 
 	const handleSubmit = async (e) => {
 		e.preventDefault();
-		alert("UPLOADING IMAGE");
+
+		const formData = new FormData();
+		formData.append("image", file);
+
+		try {
+			setError(null);
+
+			const res = await fetch("http://localhost:3000/file-upload", {
+				method: "POST",
+				body: formData,
+			});
+
+			const data = await res.json();
+
+			console.log(data);
+			setUploadedImage(data.location);
+		} catch (error) {
+			setError(error);
+		}
 	};
 
 	return (
@@ -34,7 +53,13 @@ function App() {
 			</div>
 
 			<form onSubmit={handleSubmit} inert={loading}>
-				{/* Input Element here */}
+				<input
+					type="file"
+					name="image"
+					id="image"
+					className="file:bg-amber-600 file:py-2 file:px-1 file:rounded-lg w-full cursor-pointer file:cursor-pointer my-2"
+					onChange={handleChange}
+				/>
 				<button type="submit" disabled={loading}>
 					Upload
 				</button>
