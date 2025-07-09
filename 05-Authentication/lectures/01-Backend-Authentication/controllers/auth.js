@@ -1,7 +1,7 @@
-import User from "../models/userModel.js";
-import { isValidObjectId } from "mongoose";
 import * as bcyrpt from "bcrypt";
 import jwt from "jsonwebtoken";
+import { isValidObjectId } from "mongoose";
+import User from "../models/userModel.js";
 
 const secret = process.env.JWT_SECRET;
 const tokenOptions = { expiresIn: "6d" };
