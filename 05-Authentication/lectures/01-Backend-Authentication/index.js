@@ -1,29 +1,26 @@
-import express from "express";
-import "./db/index.js";
-import errorHandler from "./middlewares/errorHandler.js";
-import postsRouter from "./routes/postRouter.js";
-import usersRouter from "./routes/userRouter.js";
-import authRouter from "./routes/authRouter.js";
+import cors from 'cors';
+import dotenv from 'dotenv';
+import express from 'express';
+import './db/index.js';
+import errorHandler from './middlewares/errorHandler.js';
+import authRouter from './routes/authRouter.js';
+import postsRouter from './routes/postsRouter.js';
+
+dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const port = process.env.PORT || 8000;
 
+app.use(
+  cors({
+    origin: 'http://localhost:5173',
+    credentials: true
+  })
+);
 app.use(express.json());
-
-app.use("/users", usersRouter);
-app.use("/posts", postsRouter);
-app.use("/auth", authRouter);
-
-app.get("/", (req, res) => {
-  res.send("Welcome!");
-});
-
-app.use("/*splat", (req, res) => {
-  throw new Error("Page not found", { cause: 404 });
-});
-
+app.use('/posts', postsRouter);
+app.use('/auth', authRouter);
+app.use('*splat', (req, res) => res.status(404).json({ error: 'Not found' }));
 app.use(errorHandler);
 
-app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
-});
+app.listen(port, () => console.log(`Server listening on http://localhost:${port}`));

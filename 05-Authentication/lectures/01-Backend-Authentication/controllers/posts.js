@@ -1,55 +1,67 @@
-import Post from "../models/postModel.js";
-import { isValidObjectId } from "mongoose";
+import { isValidObjectId } from 'mongoose';
+import Post from '../models/Post.js';
 
 export const getAllPosts = async (req, res) => {
-  const posts = await Post.find().populate("user", "firstName lastName");
-  if (!posts) {
-    throw new Error("No Posts found", { cause: 404 });
-  }
-  return res.json(posts);
-};
-
-export const getPostById = async (req, res) => {
-  const { id } = req.params;
-  if (!isValidObjectId(id)) {
-    throw new Error("Invalid id", { cause: 400 });
-  }
-  const post = await Post.findById(id).populate("user", "firstName lastName");
-  if (!post) {
-    throw new Error("Post not found", { cause: 404 });
-  }
-  return res.json(post);
+  const posts = await Post.find().lean().populate('author');
+  res.json(posts);
 };
 
 export const createPost = async (req, res) => {
-  const { title, content, user } = req.sanitizedBody;
-  const newPost = await Post.create({ title, content, user });
-  return res.json(newPost);
+  const { sanitizedBody } = req;
+  const newPost = await (await Post.create(sanitizedBody)).populate('author');
+  res.status(201).json(newPost);
+};
+
+export const getSinglePost = async (req, res) => {
+  const {
+    params: { id }
+  } = req;
+  if (!isValidObjectId(id)) throw new Error('Invalid id', { cause: 400 });
+  const post = await Post.findById(id).lean().populate('author');
+  if (!post) throw new Error(`Post with id of ${id} doesn't exist`, { cause: 404 });
+  res.send(post);
 };
 
 export const updatePost = async (req, res) => {
   const {
-    sanitizedBody,
+    sanitizedBody: { image, title, content },
     params: { id },
+    userId,
+    userRole
   } = req;
-  if (!isValidObjectId(id)) {
-    throw new Error("Invalid id", { cause: 400 });
+  if (!isValidObjectId(id)) throw new Error('Invalid id', { cause: 400 });
+
+  const postInDatabase = await Post.findById(id);
+  if (!postInDatabase) throw new Error(`Post with id of ${id} doesn't exist`, { cause: 404 });
+
+  if (userId !== postInDatabase.author.toString() && userRole !== 'admin') {
+    throw new Error('Not authorized', { cause: 403 });
   }
-  const post = await Post.findByIdAndUpdate(id, sanitizedBody, { new: true });
-  if (!post) {
-    throw new Error("Post not found", { cause: 404 });
-  }
-  return res.json(post);
+
+  postInDatabase.image = image;
+  postInDatabase.title = title;
+  postInDatabase.content = content;
+
+  await postInDatabase.save();
+
+  res.json(postInDatabase);
 };
 
 export const deletePost = async (req, res) => {
-  const { id } = req.params;
-  if (!isValidObjectId(id)) {
-    throw new Error("Invalid id", { cause: 400 });
+  const {
+    params: { id },
+    userId,
+    userRole
+  } = req;
+  if (!isValidObjectId(id)) throw new Error('Invalid id', { cause: 400 });
+
+  const postInDatabase = await Post.findById(id);
+  if (!postInDatabase) throw new Error(`Post with id of ${id} doesn't exist`, { cause: 404 });
+
+  if (userId !== postInDatabase.author.toString() && userRole !== 'admin') {
+    throw new Error('Not authorized', { cause: 403 });
   }
-  const post = await Post.findByIdAndDelete(id);
-  if (!post) {
-    throw new Error("Post not found", { cause: 404 });
-  }
-  return res.json({ message: "Post deleted" });
+
+  await Post.findByIdAndDelete(id);
+  res.json({ success: `Post with id of ${id} was deleted` });
 };

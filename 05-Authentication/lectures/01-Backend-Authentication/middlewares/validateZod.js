@@ -1,6 +1,6 @@
-import { z } from "zod/v4";
+import { z } from 'zod/v4';
 
-const validateSchema = (zodSchema) => (req, res, next) => {
+const validateZod = zodSchema => (req, res, next) => {
   const { data, error } = zodSchema.safeParse(req.body);
   if (error) {
     next(new Error(z.prettifyError(error), { cause: 400 }));
@@ -10,4 +10,4 @@ const validateSchema = (zodSchema) => (req, res, next) => {
   }
 };
 
-export default validateSchema;
+export default validateZod;
